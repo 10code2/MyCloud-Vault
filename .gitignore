@@ -1,0 +1,8 @@
+# Obsidian 本地工作区状态（窗口布局，多端会冲突）
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/workspace-table.json
+.obsidian/cache
+.trash/
+.DS_Store
+Thumbs.db
