@@ -36,6 +36,7 @@ flowchart TD
             VW[Vaultwarden<br/>密码管理 :8080]
             KU[Uptime Kuma<br/>可用性监控 :3001]
             AL[Alist<br/>云盘/WebDAV :5244]
+            HA[Halo<br/>博客/站点 :8090]
             GF[Grafana<br/>可视化 :3000]
             PR[Prometheus<br/>采集/存储 :9090]
             NE[Node Exporter<br/>主机指标 :9100]
@@ -48,6 +49,7 @@ flowchart TD
     NPM -->|vault.cloud321.cloud| VW
     NPM -->|status.cloud321.cloud| KU
     NPM -->|files.cloud321.cloud| AL
+    NPM -->|blog.cloud321.cloud| HA
     NPM -->|monitor.cloud321.cloud| GF
     NE -->|pull 指标| PR
     PR -->|数据源| GF
@@ -67,6 +69,7 @@ flowchart TD
 | 资源监控 | Node Exporter | 9100 | 主机 CPU/内存/磁盘指标 |
 | 资源监控 | Grafana | 3000 | 监控仪表盘与可视化 |
 | 存储/文件 | Alist | 5244 | 多云盘聚合、WebDAV、分享 |
+| 内容/站点 | Halo | 8090 | 个人博客/建站，主题与插件生态 |
 | 数据保护 | backup.sh | — | 定时备份配置与数据卷 |
 
 ---
@@ -126,6 +129,7 @@ cloud/
 ├── 06 Uptime Kuma服务状态监控.md
 ├── 07 网站ICP备案.md
 ├── 08 Grafana Prometheus资源监控.md
+├── 09 Halo博客部署.md
 ├── 10 Alist云盘文件服务.md
 ├── 11 自动备份与恢复.md
 └── 扩展讨论/
@@ -186,6 +190,7 @@ services:
 | Uptime Kuma | `http://<服务器IP>:3001` |
 | Grafana | `http://<服务器IP>:3000` |
 | Alist | `http://<服务器IP>:5244` |
+| Halo | `http://<服务器IP>:8090` |
 | 状态页 | 备案完成后：`https://status.cloud321.cloud` |
 
 备案完成后，全部服务将切换到 `https://<子域名>.cloud321.cloud`。
@@ -203,4 +208,4 @@ services:
 
 ---
 
-> 持续更新中：ICP 备案、监控告警完善、Halo 博客、备份异地容灾。
+> 持续更新中：ICP 备案、监控告警完善、备份异地容灾。
