@@ -142,7 +142,7 @@ Start-Process rundll32.exe -ArgumentList "shwebsvc.dll,AddNetPlaceRunDll"
 ```
 
 在向导中：
-- 网络地址：`http://110.41.63.156:5244/dav`
+- 网络地址：`http://服务器公网IP:5244/dav`
 - 账号：admin / Alist 密码
 - 完成后"此电脑"出现网络位置，可像本地盘一样读写。
 
