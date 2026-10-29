@@ -19,7 +19,7 @@
 
 ```mermaid
 flowchart TD
-    Visitor[访客 / 浏览器] -->|blog.cloud321.cloud 备案后| NPM[NPM 网关 80/443]
+    Visitor[访客 / 浏览器] -->|blog.cloud321.cloud（收尾切换中）| NPM[NPM 网关 80/443]
     NPM --> Halo[Halo 容器 :8090]
     Admin[管理员] -->|/console 后台| Halo
     Halo --> Theme[主题<br/>渲染前台]
@@ -42,7 +42,7 @@ Halo 官方建议至少 1GB RAM，但默认 JVM 堆仅 **256MB**（`-Xmx256m`）
 3. 安装并启用主题（前台首页依赖主题）
 4. 写测试文章、体验后台
 5. 接入 Uptime Kuma 监控
-6. 备案后通过 NPM 反代到 `blog.cloud321.cloud`
+6. 备案已通过（2026-10-29），收尾阶段通过 NPM 反代到 `blog.cloud321.cloud`（清单见 [[07 网站ICP备案]] §7.2）
 
 ---
 
@@ -53,7 +53,7 @@ Halo 官方建议至少 1GB RAM，但默认 JVM 堆仅 **256MB**（`-Xmx256m`）
 3. 对外服务该用"公网/域名"还是"内网"监控
 4. 根路径 `/` 返回 **404**（没有安装主题）
 5. 主题从应用市场下载可能慢/失败
-6. 备案期间域名 80/443 被阻断
+6. 备案期间域名 80/443 曾被阻断（2026-10-29 备案通过后解除）
 
 ---
 
@@ -167,11 +167,13 @@ docker update --memory 662m 31597ba84f7c
 
 ---
 
-## 六、备案后
+## 六、收尾清单（备案已通过，2026-10-29；通用清单见 [[07 网站ICP备案]] §7.2）
 
-1. Halo 后台"外部访问地址"改为 `https://blog.cloud321.cloud`；
-2. NPM 添加反代：`blog.cloud321.cloud` → `172.17.0.1:8090`，申请证书、勾选 Force SSL / HTTP/2；
-3. Kuma 监控切换为 `https://blog.cloud321.cloud`，可同时监控证书到期。
+- [ ] NPM 添加反代：`blog.cloud321.cloud` → `172.17.0.1:8090`，申请证书、勾选 Force SSL / HTTP/2；
+- [ ] Halo 后台"外部访问地址"改为 `https://blog.cloud321.cloud`；
+- [ ] **Halo 主题页脚悬挂备案号**：添加 `粤ICP备2026168431号`，链接 `https://beian.miit.gov.cn/`（个人备案对外内容站点，备案号必须挂在博客主页底部）；
+- [ ] Kuma 监控切换为 `https://blog.cloud321.cloud`，同时监控证书到期；
+- [ ] 公安备案完成后，公安备案号一并挂到同一页脚。
 
 ---
 

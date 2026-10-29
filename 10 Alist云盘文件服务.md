@@ -12,7 +12,7 @@
 
 - 技术栈：Go、Docker、WebDAV、S3 兼容对象存储
 - 运行端口：5244
-- 规划域名：`drive.cloud321.cloud`
+- 规划域名：`files.cloud321.cloud`（旧规划名 `drive.`，以 NPM 最终配置为准）
 - 镜像：`xhofe/alist`
 
 ### 多存储聚合架构
@@ -56,7 +56,7 @@ flowchart TD
 2. 根目录上传报 `storage not found`
 3. 只读挂载不能上传
 4. Windows 原生 WebDAV 默认拒绝 HTTP（需改注册表）
-5. 域名 80/443 受未备案阻断
+5. 域名 80/443 曾受未备案阻断（2026-10-29 备案通过后解除）
 
 ---
 
@@ -146,11 +146,11 @@ Start-Process rundll32.exe -ArgumentList "shwebsvc.dll,AddNetPlaceRunDll"
 - 账号：admin / Alist 密码
 - 完成后"此电脑"出现网络位置，可像本地盘一样读写。
 
-### 7. 备案阻断
+### 7. 备案通过后的状态（2026-10-29）
 
-- 域名 80/443 当前被未备案阻断（详见 [[07 网站ICP备案]]）；
-- 现用 `http://公网IP:5244`（网页）、`http://公网IP:5244/dav`（WebDAV）；
-- 备案后换成 `https://drive.cloud321.cloud`。
+- 域名 80/443 曾被未备案阻断（全过程见 [[07 网站ICP备案]]），备案通过后阻断解除；
+- 当前仍用 `http://公网IP:5244`（网页）、`http://公网IP:5244/dav`（WebDAV）作为临时入口；
+- 收尾待办：NPM 补 `files.cloud321.cloud`（本节旧写 `drive.`，统一以 NPM 实际域名为准）反代 + HTTPS，清单见 [[07 网站ICP备案]] §7.2；Alist 为自用后台，不做公开导航入口。
 
 ---
 
@@ -208,7 +208,7 @@ Start-Process rundll32.exe -ArgumentList "shwebsvc.dll,AddNetPlaceRunDll"
 | 根目录上传失败 | 根目录非存储 | 进入挂载路径再上传 |
 | 不能上传 | 只读挂载 | 去掉 `:ro` 重建 |
 | WebDAV 连不上 | 默认仅 HTTPS | 改 BasicAuthLevel=2 |
-| 域名打不开 | 未备案 | 走备案（07） |
+| 域名打不开 | 未备案 | 2026-10-29 备案通过（07），阻断解除；反代切换见 07 §7.2 |
 
 > 核心经验：
 > 1. 文件读写必须落在某个**已挂载存储**内，根目录只是挂载点；
@@ -223,5 +223,5 @@ Start-Process rundll32.exe -ArgumentList "shwebsvc.dll,AddNetPlaceRunDll"
 - 目前仅挂载本机目录，未对接真实对象存储（可加 OBS/MinIO）；
 - 未配置离线下载工具（Aria2 等）；
 - 多用户/权限未细化；
-- 对外正式访问依赖 ICP 备案（07）；
-- 备案后可在 NPM 配置 `drive.cloud321.cloud` 并启用 HTTPS。
+- 对外访问已随备案通过开放；NPM 域名反代列入 [[07 网站ICP备案]] §7.2 收尾清单；
+- 收尾时在 NPM 配置 `files.cloud321.cloud` 并启用 HTTPS（旧规划名 `drive.cloud321.cloud`，以最终 NPM 配置为准）。

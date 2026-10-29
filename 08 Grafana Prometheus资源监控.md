@@ -45,7 +45,7 @@ flowchart LR
 3. 配置 Prometheus 采集 Node Exporter
 4. Grafana 添加 Prometheus 数据源
 5. 导入现成 Node Exporter 仪表盘
-6. （备案后）NPM 反代 `monitor.cloud321.cloud`
+6. （收尾项）NPM 反代 `monitor.cloud321.cloud`（备案已通过，见 [[07 网站ICP备案]] §7.2）
 
 ---
 
@@ -55,7 +55,7 @@ flowchart LR
 2. Node Exporter 不挂载宿主机就读不到真实指标
 3. 数据源 URL 填 127.0.0.1 会连不通
 4. 导入仪表盘大量空白/No data（时间窗口）
-5. 域名 80/443 被未备案阻断
+5. 域名 80/443 曾被未备案阻断（2026-10-29 备案通过后解除）
 
 ---
 
@@ -247,7 +247,7 @@ node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100   # 可用内�
 | 主机指标缺失 | 未挂载宿主机命名空间 | 挂载 /proc /sys / 并改路径 |
 | 数据源连不通 | 填了 127.0.0.1 | 用服务名 `prometheus:9090` |
 | 大量 No data | 时间窗口 24h、数据刚采 | 改 15 分钟，等待 |
-| 域名访问不了 | 未备案 | 走备案（07） |
+| 域名访问不了 | 未备案 | 2026-10-29 备案通过（07），阻断解除；反代切换见 07 §7.2 |
 
 > 核心经验：
 > 1. Prometheus 是 **Pull 模型**，目标暴露 `/metrics` 即可被采集；
@@ -262,5 +262,5 @@ node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100   # 可用内�
 - 仅监控单机，未做多目标/服务发现；
 - 未配置**告警规则**（Prometheus Alertmanager + Grafana Alerting 可扩展）；
 - 数据保留短（15天），无长期存储；
-- 对外正式访问依赖 ICP 备案（07），当前用 `http://公网IP:3000`；
+- 对外访问已随备案通过开放；当前临时用 `http://公网IP:3000`，`monitor.cloud321.cloud` 反代列入 07 §7.2 收尾清单；Grafana 为自用后台，建议加访问密码、不做公开入口。
 - 可增加 MySQL Exporter、Nginx Exporter 等，覆盖更多服务。
