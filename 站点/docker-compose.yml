@@ -3,15 +3,15 @@ services:
     image: nginx:1.27-alpine
     container_name: portal
     restart: unless-stopped
-    ports:
-      # 只被 NPM 反代（172.17.0.1:8081），不对公网开放时可在安全组封禁 8081
-      - "8081:80"
+    # 不发布宿主机端口：直接加入 NPM 所在网络，由 NPM 用容器名 portal:80 反代。
+    # 这样既不需要 8081，也不依赖 172.17.0.1（该地址在 docker0 无容器时会不可达）。
     volumes:
       - ./html:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     mem_limit: 64m
+    networks:
+      - npm_net
     healthcheck:
-      # busybox wget：只取响应头，不落盘
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/index.html"]
       interval: 30s
       timeout: 5s
@@ -22,3 +22,9 @@ services:
       options:
         max-size: "5m"
         max-file: "3"
+
+networks:
+  # 复用 NPM 的 compose 网络（docker network ls 可见 npm_default）
+  npm_net:
+    external: true
+    name: npm_default

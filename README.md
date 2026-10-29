@@ -33,7 +33,7 @@ flowchart TD
 
         subgraph SVC[Docker 容器集群]
             direction LR
-            PO[portal<br/>根域名门户 :8081]
+            PO[portal<br/>根域名门户 :80]
             VW[Vaultwarden<br/>密码管理 :8080]
             KU[Uptime Kuma<br/>可用性监控 :3001]
             AL[Alist<br/>云盘/WebDAV :5244]
@@ -65,7 +65,7 @@ flowchart TD
 | 能力域 | 服务 | 端口 | 作用 |
 |---|---|---|---|
 | 入口网关 | Nginx Proxy Manager | 80 / 81 / 443 | 反向代理、子域名分流、自动 HTTPS |
-| 门户/入口 | portal（nginx:alpine） | 8081（仅反代可达） | 根域名落地页、服务导航、备案号悬挂 |
+| 门户/入口 | portal（nginx:alpine） | 不发布（仅 npm_default 内网） | 根域名落地页、服务导航、备案号悬挂 |
 | 安全/密码 | Vaultwarden | 8080 | 兼容 Bitwarden 的轻量密码管理 |
 | 可用性监控 | Uptime Kuma | 3001 | 服务探活、告警、公开状态页 |
 | 资源监控 | Prometheus | 9090 | 指标采集与时序存储 |
@@ -119,6 +119,7 @@ flowchart TD
 | 根域名 / `monitor` 返回 `Congratulations!` | NPM 内置 `default_host` 兜底站点会响应所有未匹配域名，**状态码 200 具有欺骗性** | 新建 Proxy Host 并签证书；判断标准是「页面标题 + 443 证书」而非状态码（见笔记 12） |
 | Grafana 经域名访问，一登录就跳 localhost | `root_url` 仍是默认 `http://localhost:3000`，所有绝对链接都指向它 | 设 `GF_SERVER_ROOT_URL=https://monitor.cloud321.cloud` |
 | 用 iptables 封 Docker 映射的端口封不住 | 端口映射走 iptables 的 `DOCKER` 链，不经过 `INPUT` | 从云安全组收敛，或用 `DOCKER-USER` 链 |
+| 宿主机 `curl` 通、NPM 反代却 502 | 发布端口有两条路径：宿主机进程走 `docker-proxy`，容器间访问走 `nat/DOCKER` 的 DNAT；该端口 DNAT 未生效，容器侧报 `EHOSTUNREACH`（不是 refused） | 放弃宿主端口，portal 加入 `npm_default`，NPM 用容器名 `portal:80` 转发（见笔记 12 §9.5） |
 
 ---
 
