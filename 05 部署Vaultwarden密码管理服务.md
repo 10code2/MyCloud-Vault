@@ -220,11 +220,27 @@ service iptables save
 > `*`（泛域名/通配符域名）、子域名与证书验证方式的概念讲解，见 [[07 网站ICP备案]] 附录 A。
 
 **验证**：
+
 ```bash
 nslookup vault.cloud321.cloud 223.5.5.5
-# Address: ipv4
+# 最后一行 Address: 110.41.63.156（你的华为云 EIP）
 ```
-> 直接查阿里 DNS（223.5.5.5）绕过本地缓存。本地 ping 不到可执行 `ipconfig /flushdns` 刷新。
+
+命令拆解：`nslookup` 是 DNS 查询工具；`vault.cloud321.cloud` 是要查的域名；`223.5.5.5` 指定阿里云公共 DNS，绕过本机/路由器缓存直接看线上最新配置。
+
+预期输出（Windows）：
+
+```text
+服务器:  public1.alidns.com
+Address:  223.5.5.5
+
+名称:    vault.cloud321.cloud
+Address:  110.41.63.156
+```
+
+- `Address` 等于 EIP → 泛解析生效；
+- 报 `找不到 / NXDOMAIN`：`*` 记录没配好或尚未生效，等待后重查，本机可执行 `ipconfig /flushdns` 刷新缓存；
+- A 记录、`*`、`@`、EIP 与异常对照的完整讲解，见 [[07 网站ICP备案]] 附录 A.9。
 
 ---
 
