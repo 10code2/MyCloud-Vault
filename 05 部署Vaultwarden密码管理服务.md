@@ -217,7 +217,7 @@ service iptables save
 
 泛解析让 `vault.`、`status.`、`blog.` 等所有子域名自动指向服务器。
 
-> `*`（泛域名/通配符域名）、子域名与证书验证方式的概念讲解，见 [[07 网站ICP备案]] 附录 A。
+> `*`（泛域名/通配符域名）、子域名与证书验证方式的概念讲解，见 [[07 网站ICP备案]] 第二章 基础概念（2.1–2.7）。
 
 **验证**：
 
@@ -240,7 +240,7 @@ Address:  110.41.63.156
 
 - `Address` 等于 EIP → 泛解析生效；
 - 报 `找不到 / NXDOMAIN`：`*` 记录没配好或尚未生效，等待后重查，本机可执行 `ipconfig /flushdns` 刷新缓存；
-- A 记录、`*`、`@`、EIP 与异常对照的完整讲解，见 [[07 网站ICP备案]] 附录 A.9。
+- A 记录、`*`、`@`、EIP 与异常对照的完整讲解，见 [[07 网站ICP备案]] 2.8、2.9。
 
 ---
 
@@ -340,7 +340,7 @@ grep SIGNUPS_ALLOWED docker-compose.yml
 
 Vaultwarden 密码服务完成，接下来部署 **Uptime Kuma 服务状态监控**（公开状态页，给面试官看），流程类似：容器启动 → 放行端口 → NPM 反代 + HTTPS。
 
-> **备案收尾（2026-10-29 备案通过后）**：`vault.cloud321.cloud` 的 NPM 反代与证书已在 4.7 配置，收尾阶段核对规则生效、Force SSL / WebSocket 正常；客户端服务器地址切到 `https://vault.cloud321.cloud`。通用清单见 [[07 网站ICP备案]] §7.2。Vaultwarden 为自用后台，不做公开导航入口、保持关闭公开注册。
+> **备案收尾（2026-10-29 备案通过后）**：`vault.cloud321.cloud` 的 NPM 反代与证书已在 4.7 配置，收尾阶段核对规则生效、Force SSL / WebSocket 正常；客户端服务器地址切到 `https://vault.cloud321.cloud`。通用清单见 [[07 网站ICP备案]] 第六章 收尾实操手册（步骤 4、5、7）。Vaultwarden 为自用后台，不做公开导航入口、保持关闭公开注册。
 
 ---
 

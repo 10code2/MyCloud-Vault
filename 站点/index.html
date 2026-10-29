@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CloudLab · 云平台服务导航</title>
+<meta name="description" content="CloudLab：基于华为云 Flexus 服务器、Docker 容器化部署的自托管服务平台，含统一网关、可用性监控、资源监控、云盘与密码管理。">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M30 62h40a10 10 0 0 0 1-20 16 16 0 0 0-31-4 12 12 0 0 0-10 24z' fill='white'/></svg>">
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --line:#e5e7eb;
+    --text:#16181d;
+    --muted:#6b7280;
+    --accent:#2563eb;
+    --accent-soft:#eff4ff;
+    --green:#16a34a;
+    --green-soft:#ecfdf3;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 22px}
+
+  /* ---------- 顶部 ---------- */
+  header{padding:56px 0 34px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .brand svg{display:block}
+  .brand-name{font-size:17px;font-weight:650;letter-spacing:.2px}
+  .brand-sub{font-size:12.5px;color:var(--muted);letter-spacing:.3px}
+
+  h1{
+    margin:0 0 12px;
+    font-size:31px;
+    line-height:1.3;
+    font-weight:700;
+    letter-spacing:-.4px;
+  }
+  h1 span{color:var(--accent)}
+  .lede{margin:0;max-width:640px;color:#4b5563;font-size:15px}
+
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:5px 11px;border-radius:999px;
+    font-size:12.5px;color:var(--muted);
+    background:#fff;border:1px solid var(--line);
+  }
+  .pill b{color:var(--text);font-weight:600}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+  .pill.live{color:#15803d;background:var(--green-soft);border-color:#bbf7d0;text-decoration:none}
+  .pill.live:hover{background:#dcfce7}
+
+  /* ---------- 主体 ---------- */
+  main{padding:40px 0 8px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .sec-head h2{margin:0;font-size:13px;font-weight:650;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
+  .sec-head a{font-size:13px;color:var(--accent);text-decoration:none}
+  .sec-head a:hover{text-decoration:underline}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px}
+  .card{
+    position:relative;
+    display:block;
+    padding:20px 20px 18px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    text-decoration:none;
+    color:inherit;
+    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+  }
+  .card:hover{transform:translateY(-2px);border-color:#c7d2fe;box-shadow:0 8px 22px rgba(23,32,64,.07)}
+  .card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .ico{
+    flex:0 0 34px;width:34px;height:34px;border-radius:9px;
+    display:grid;place-items:center;
+    background:var(--accent-soft);color:var(--accent);
+  }
+  .ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .card-name{font-size:15px;font-weight:640}
+  .card-desc{margin:0;font-size:13.5px;color:var(--muted);min-height:42px}
+  .card-host{
+    margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;color:#9ca3af;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .card-host .arrow{color:var(--accent);opacity:0;transition:opacity .16s ease;font-size:13px}
+  .card:hover .card-host .arrow{opacity:1}
+  .tag{
+    position:absolute;top:18px;right:18px;
+    font-size:11px;color:var(--muted);
+    background:#f3f4f6;border-radius:5px;padding:2px 7px;
+  }
+
+  /* ---------- 关于 ---------- */
+  .about{margin-top:44px;padding:26px 26px 22px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}
+  .about h2{margin:0 0 14px;font-size:15px;font-weight:650}
+  .about p{margin:0 0 16px;color:#4b5563;font-size:14px}
+  .about code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.9em;background:#f3f4f6;border:1px solid #eceef1;
+    border-radius:5px;padding:1px 5px;color:#374151;
+  }
+  .stack{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;list-style:none}
+  .stack li{
+    font-size:12.5px;color:#374151;
+    background:#f3f4f6;border-radius:6px;padding:4px 9px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px;margin-top:20px;border-top:1px solid var(--line);padding-top:18px}
+  .fact-num{font-size:19px;font-weight:680;letter-spacing:-.3px}
+  .fact-label{font-size:12.5px;color:var(--muted)}
+
+  /* ---------- 页脚 ---------- */
+  footer{
+    margin-top:52px;padding:26px 0 40px;
+    border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--muted);
+  }
+  .foot-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;justify-content:space-between}
+  .foot-links{display:flex;flex-wrap:wrap;gap:14px}
+  footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;transition:color .15s,border-color .15s}
+  footer a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .beian{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+
+  @media (max-width:560px){
+    header{padding:38px 0 26px}
+    h1{font-size:25px}
+    .about{padding:22px 18px 18px}
+    .grid{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
+        <rect width="100" height="100" rx="24" fill="#2563eb"/>
+        <path d="M30 62h40a10 10 0 0 0 1-20 16 16 0 0 0-31-4 12 12 0 0 0-10 24z" fill="#fff"/>
+      </svg>
+      <div>
+        <div class="brand-name">CloudLab</div>
+        <div class="brand-sub">自托管云平台 · cloud321.cloud</div>
+      </div>
+    </div>
+
+    <h1>一台 <span>2 核 2G</span> 的服务器，<br>一整套自己搭的云服务</h1>
+    <p class="lede">
+      以一台 2 核 2G 的华为云 Flexus 服务器为底座，用 Docker Compose 编排，
+      由 Nginx Proxy Manager 统一收敛入口并按子域名分流，全站 Let's Encrypt 自动 HTTPS。
+      下面的服务都在真实公网环境运行，可以直接点开看。
+    </p>
+
+    <div class="meta">
+      <a class="pill live" href="https://status.cloud321.cloud" target="_blank" rel="noopener">
+        <span class="dot"></span>服务实时状态
+      </a>
+      <span class="pill">华为云 Flexus · <b>2 核 2G</b></span>
+      <span class="pill">CentOS 7.9 · <b>Docker 24</b></span>
+      <span class="pill">入口 <b>NPM</b> · 80/443</span>
+      <span class="pill">HTTPS <b>Let's Encrypt</b></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="sec-head">
+      <h2>服务导航</h2>
+      <a href="https://status.cloud321.cloud" target="_blank" rel="noopener">查看可用性监控 →</a>
+    </div>
+
+    <div class="grid">
+
+      <a class="card" href="https://blog.cloud321.cloud" target="_blank" rel="noopener">
+        <div class="card-top">
+          <span class="ico">
+            <svg viewBox="0 0 24 24"><path d="M4 5h13a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3z"/><path d="M8 9h8M8 13h5"/></svg>
+          </span>
+          <span class="card-name">技术博客</span>
+        </div>
+        <p class="card-desc">Halo 搭建的站点，记录运维实践与排障过程。</p>
+        <div class="card-host"><span>blog.cloud321.cloud</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" href="https://status.cloud321.cloud" target="_blank" rel="noopener">
+        <div class="card-top">
+          <span class="ico">
+            <svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-7 4 14L16 12h5"/></svg>
+          </span>
+          <span class="card-name">服务可用性监控</span>
+        </div>
+        <p class="card-desc">Uptime Kuma 探活各站点，含响应时间与证书到期提醒。</p>
+        <div class="card-host"><span>status.cloud321.cloud</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" href="https://monitor.cloud321.cloud" target="_blank" rel="noopener">
+        <div class="card-top">
+          <span class="ico">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l3.5-4 3 2.5L20 7"/></svg>
+          </span>
+          <span class="card-name">主机资源监控</span>
+        </div>
+        <p class="card-desc">Prometheus + Grafana 采集 CPU / 内存 / 磁盘指标。</p>
+        <div class="card-host"><span>monitor.cloud321.cloud</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" href="https://files.cloud321.cloud" target="_blank" rel="noopener">
+        <div class="card-top">
+          <span class="ico">
+            <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </span>
+          <span class="card-name">云盘文件服务</span>
+        </div>
+        <p class="card-desc">Alist 聚合存储，支持 WebDAV 挂载为本地网络驱动器。</p>
+        <div class="card-host"><span>files.cloud321.cloud</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" href="https://vault.cloud321.cloud" target="_blank" rel="noopener">
+        <span class="tag">私有</span>
+        <div class="card-top">
+          <span class="ico">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          </span>
+          <span class="card-name">密码管理</span>
+        </div>
+        <p class="card-desc">Vaultwarden 自托管密码库，兼容 Bitwarden 客户端，已关闭公开注册。</p>
+        <div class="card-host"><span>vault.cloud321.cloud</span><span class="arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <section class="about">
+      <h2>这套东西是怎么跑起来的</h2>
+      <p>
+        所有服务以独立 Docker Compose 单元部署在 <code>/opt/cloudlab/</code> 下，数据用命名卷或 bind 目录持久化。
+        对外只暴露 NPM 的 80/443，其余端口由安全组和 iptables 收敛；Prometheus 与 Node Exporter 仅在内网可见。
+        每天 03:30 由 crontab 触发备份脚本，打包配置与数据卷并保留 7 天。
+      </p>
+      <ul class="stack">
+        <li>HuaweiCloud ECS</li>
+        <li>CentOS 7.9</li>
+        <li>Docker 24 / Compose v2</li>
+        <li>Nginx Proxy Manager</li>
+        <li>Let's Encrypt</li>
+        <li>Prometheus</li>
+        <li>Grafana</li>
+        <li>Node Exporter</li>
+        <li>Uptime Kuma</li>
+        <li>Halo</li>
+        <li>Alist / WebDAV</li>
+        <li>Vaultwarden</li>
+        <li>iptables</li>
+        <li>crontab + Shell</li>
+      </ul>
+      <div class="facts">
+        <div>
+          <div class="fact-num">6</div>
+          <div class="fact-label">能力域（入口/安全/监控/存储/内容/备份）</div>
+        </div>
+        <div>
+          <div class="fact-num">5</div>
+          <div class="fact-label">子域名统一入口</div>
+        </div>
+        <div>
+          <div class="fact-num">2</div>
+          <div class="fact-label">层监控（可用性 + 资源）</div>
+        </div>
+        <div>
+          <div class="fact-num">03:30</div>
+          <div class="fact-label">每日自动备份</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <span>© 2026 CloudLab · 个人云平台实践项目</span>
+      <span class="foot-links">
+        <a href="https://github.com/10code2/MyCloud-Vault" target="_blank" rel="noopener">项目文档</a>
+        <a href="https://status.cloud321.cloud" target="_blank" rel="noopener">服务状态</a>
+        <a href="https://blog.cloud321.cloud" target="_blank" rel="noopener">技术博客</a>
+      </span>
+    </div>
+    <div class="beian">
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026168431号</a>
+      <span>本站由 Nginx Proxy Manager 反向代理 · Let's Encrypt 提供 HTTPS</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

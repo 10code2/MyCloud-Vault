@@ -7,9 +7,9 @@
 
 ## 一、项目简介
 
-本项目以一台 **2核2G、CentOS 7.9** 的华为云 Flexus 服务器为底座，使用 **Docker + Docker Compose** 容器化部署了 5 大类、7 个容器的自托管服务，并通过 **Nginx Proxy Manager** 统一收敛入口、自动签发 HTTPS 证书，最终实现：
+本项目以一台 **2核2G、CentOS 7.9** 的华为云 Flexus 服务器为底座，使用 **Docker + Docker Compose** 容器化部署了 6 大类、9 个容器的自托管服务，并通过 **Nginx Proxy Manager** 统一收敛入口、自动签发 HTTPS 证书，最终实现：
 
-- 多服务共用 **80/443** 端口，通过子域名分流；
+- 多服务共用 **80/443** 端口，通过子域名分流，根域名做统一门户导航；
 - 服务可用性（Uptime Kuma）与主机资源（Prometheus + Grafana）双重监控；
 - 云盘文件服务 + WebDAV 挂载；
 - 定时全量备份配置与数据卷；
@@ -33,6 +33,7 @@ flowchart TD
 
         subgraph SVC[Docker 容器集群]
             direction LR
+            PO[portal<br/>根域名门户 :8081]
             VW[Vaultwarden<br/>密码管理 :8080]
             KU[Uptime Kuma<br/>可用性监控 :3001]
             AL[Alist<br/>云盘/WebDAV :5244]
@@ -46,6 +47,7 @@ flowchart TD
     end
 
     SG --> NPM
+    NPM -->|cloud321.cloud / www| PO
     NPM -->|vault.cloud321.cloud| VW
     NPM -->|status.cloud321.cloud| KU
     NPM -->|files.cloud321.cloud| AL
@@ -63,6 +65,7 @@ flowchart TD
 | 能力域 | 服务 | 端口 | 作用 |
 |---|---|---|---|
 | 入口网关 | Nginx Proxy Manager | 80 / 81 / 443 | 反向代理、子域名分流、自动 HTTPS |
+| 门户/入口 | portal（nginx:alpine） | 8081（仅反代可达） | 根域名落地页、服务导航、备案号悬挂 |
 | 安全/密码 | Vaultwarden | 8080 | 兼容 Bitwarden 的轻量密码管理 |
 | 可用性监控 | Uptime Kuma | 3001 | 服务探活、告警、公开状态页 |
 | 资源监控 | Prometheus | 9090 | 指标采集与时序存储 |
@@ -98,6 +101,7 @@ flowchart TD
 5. **云盘 + WebDAV**：Alist 聚合存储，Windows 原生 WebDAV 挂载为网络驱动器。
 6. **自动备份**：脚本自动备份 compose 配置、bind 数据与全部 named volume，定时清理 7 天前备份。
 7. **小规格资源优化**：2G 内存下增加 Swap 防 OOM，按内存占用评估服务可行性。
+8. **根域名门户 + 全站强制 HTTPS**：独立 nginx 容器承载门户页（服务导航 + 备案号悬挂），所有站点 80 一律 301 跳 443。
 
 ---
 
@@ -109,9 +113,12 @@ flowchart TD
 | Docker 拉取镜像慢 | 公开加速地址不稳定 | 改用华为云 SWR 专属内网加速器（460MB/s） |
 | 容器与 firewalld 冲突 | 防火墙对 Docker 规则处理不一致 | 切换为 iptables，手动放行端口 |
 | 证书申请返回 403 | 代理把 `.well-known` 转发给后端，验证失败 | 改用 DNS-01 验证 + 阿里云 RAM 子账号 |
-| 域名 80/443 打不开 | 域名解析到国内服务器但未 ICP 备案，被合规阻断 | 2026-10-29 完成华为云个人备案（粤ICP备2026168431号），阻断解除；域名反代与证书切换见笔记 07 §7 |
+| 域名 80/443 打不开 | 域名解析到国内服务器但未 ICP 备案，被合规阻断 | 2026-10-29 完成华为云个人备案（粤ICP备2026168431号），阻断解除；四站反代与证书已完成，剩余收尾见笔记 12 |
 | 2G 内存有 OOM 风险 | 无 Swap、监控栈占内存高 | 新增 1G Swap 并写入 fstab |
 | Alist 根目录上传失败 | 根目录只是挂载点列表，非实际存储 | 进入具体存储目录后上传 |
+| 根域名 / `monitor` 返回 `Congratulations!` | NPM 内置 `default_host` 兜底站点会响应所有未匹配域名，**状态码 200 具有欺骗性** | 新建 Proxy Host 并签证书；判断标准是「页面标题 + 443 证书」而非状态码（见笔记 12） |
+| Grafana 经域名访问，一登录就跳 localhost | `root_url` 仍是默认 `http://localhost:3000`，所有绝对链接都指向它 | 设 `GF_SERVER_ROOT_URL=https://monitor.cloud321.cloud` |
+| 用 iptables 封 Docker 映射的端口封不住 | 端口映射走 iptables 的 `DOCKER` 链，不经过 `INPUT` | 从云安全组收敛，或用 `DOCKER-USER` 链 |
 
 ---
 
@@ -132,6 +139,11 @@ cloud/
 ├── 09 Halo博客部署.md
 ├── 10 Alist云盘文件服务.md
 ├── 11 自动备份与恢复.md
+├── 12 根域名门户与域名收尾配置.md
+├── 站点/                         # 根域名门户（静态页 + nginx 配置）
+│   ├── index.html
+│   ├── nginx.conf
+│   └── docker-compose.yml
 └── 扩展讨论/
     ├── 01 云环境和docker配置扩展.md
     └── 02 NPM反向代理网关扩展.md
@@ -182,29 +194,20 @@ services:
 
 ## 九、在线演示
 
-> ICP 备案已于 **2026-10-29** 通过（华为云个人备案，粤ICP备2026168431号）。域名反代与 HTTPS 切换处于收尾阶段，**完成前仍以 IP + 端口作为临时入口**；切换完成后统一走 NPM 80/443 的子域名。
+> 全部服务在真实公网环境运行，可直接点开验证。ICP 备案 **2026-10-29 通过**（华为云个人备案，粤ICP备2026168431号）。
 
-### 当前临时入口（IP + 端口）
+| 服务 | 访问地址 | 说明 |
+|---|---|---|
+| **平台门户** | `https://cloud321.cloud` | 服务导航、技术栈、备案号悬挂 |
+| 技术博客 | `https://blog.cloud321.cloud` | Halo |
+| 服务可用性监控 | `https://status.cloud321.cloud` | Uptime Kuma 公开状态页 |
+| 主机资源监控 | `https://monitor.cloud321.cloud` | Grafana（匿名只读，数据源 Prometheus） |
+| 云盘文件 | `https://files.cloud321.cloud` | Alist，WebDAV 路径 `/dav` |
+| 密码管理 | `https://vault.cloud321.cloud` | Vaultwarden，已关闭公开注册 |
 
-| 服务 | 临时地址 |
-|---|---|
-| NPM 管理后台 | `http://<服务器IP>:81` |
-| Uptime Kuma | `http://<服务器IP>:3001` |
-| Grafana | `http://<服务器IP>:3000` |
-| Alist | `http://<服务器IP>:5244` |
-| Halo | `http://<服务器IP>:8090` |
-
-### 目标访问方式（收尾切换中，清单见笔记 07 §7.2）
-
-| 服务 | 目标域名 |
-|---|---|
-| Vaultwarden | `https://vault.cloud321.cloud` |
-| Uptime Kuma 状态页 | `https://status.cloud321.cloud` |
-| Halo 博客 | `https://blog.cloud321.cloud` |
-| Alist | `https://files.cloud321.cloud` |
-| Grafana | `https://monitor.cloud321.cloud` |
-
-> Prometheus（9090）、Node Exporter（9100）与 NPM 管理后台（81）为内部/管理端口，不对公网暴露。
+> - 全站 80 端口强制 301 跳转 443，HTTPS 证书由 Let's Encrypt 自动签发与续期；
+> - 管理端口（NPM `81`、Prometheus `9090`、Node Exporter `9100`）不对公网暴露，仅 VPC 内可见；
+> - `monitor` 与根域名门户按 [[12 根域名门户与域名收尾配置]] 上线后生效；在此之前这两处仍返回 NPM 默认页。
 
 ---
 

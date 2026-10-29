@@ -19,7 +19,7 @@
 
 ```mermaid
 flowchart TD
-    Visitor[访客 / 浏览器] -->|blog.cloud321.cloud（收尾切换中）| NPM[NPM 网关 80/443]
+    Visitor[访客 / 浏览器] -->|blog.cloud321.cloud<br/>Let's Encrypt HTTPS| NPM[NPM 网关 80/443]
     NPM --> Halo[Halo 容器 :8090]
     Admin[管理员] -->|/console 后台| Halo
     Halo --> Theme[主题<br/>渲染前台]
@@ -42,7 +42,7 @@ Halo 官方建议至少 1GB RAM，但默认 JVM 堆仅 **256MB**（`-Xmx256m`）
 3. 安装并启用主题（前台首页依赖主题）
 4. 写测试文章、体验后台
 5. 接入 Uptime Kuma 监控
-6. 备案已通过（2026-10-29），收尾阶段通过 NPM 反代到 `blog.cloud321.cloud`（清单见 [[07 网站ICP备案]] §7.2）
+6. 备案已通过（2026-10-29），收尾阶段通过 NPM 反代到 `blog.cloud321.cloud`（清单见 [[07 网站ICP备案]] 第六章 步骤 4、5、6）
 
 ---
 
@@ -167,7 +167,7 @@ docker update --memory 662m 31597ba84f7c
 
 ---
 
-## 六、收尾清单（备案已通过，2026-10-29；通用清单见 [[07 网站ICP备案]] §7.2）
+## 六、收尾清单（备案已通过，2026-10-29；通用步骤见 [[07 网站ICP备案]] 第六章 收尾实操手册）
 
 - [ ] NPM 添加反代：`blog.cloud321.cloud` → `172.17.0.1:8090`，申请证书、勾选 Force SSL / HTTP/2；
 - [ ] Halo 后台"外部访问地址"改为 `https://blog.cloud321.cloud`；
