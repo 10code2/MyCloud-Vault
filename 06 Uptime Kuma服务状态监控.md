@@ -160,7 +160,8 @@ Uptime Kuma 支持的监控类型：
 - **改用 DNS 验证（成功）**：
   - 建 RAM 子用户 `dns-certbot`（仅 OpenAPI 访问），授权 `AliyunDNSFullAccess`，取 AccessKey ID/Secret；
   - NPM 编辑 SSL 时选"申请新证书" → 勾选 **Use a DNS Challenge** → Provider 选 Aliyun → 填凭证；
-  - 不依赖 80 端口，证书申请成功（还可申请通配符 `*.cloud321.cloud`）。
+  - 不依赖 80 端口，证书申请成功（还可申请通配符 `*.cloud321.cloud`）；
+  - 概念扫盲（HTTP-01 / DNS-01 / 通配符证书 / `*.` 的含义）见 [[07 网站ICP备案]] 附录 A。
 
 ### 7. 备案通过后的状态（2026-10-29）
 

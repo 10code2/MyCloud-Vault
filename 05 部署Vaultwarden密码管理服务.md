@@ -217,6 +217,8 @@ service iptables save
 
 泛解析让 `vault.`、`status.`、`blog.` 等所有子域名自动指向服务器。
 
+> `*`（泛域名/通配符域名）、子域名与证书验证方式的概念讲解，见 [[07 网站ICP备案]] 附录 A。
+
 **验证**：
 ```bash
 nslookup vault.cloud321.cloud 223.5.5.5
