@@ -236,6 +236,26 @@ docker pull nginx:1.27-alpine               # 实测拉一个小镜像
 
 > ⚠️ 踩过的坑：SWR 地址里 `myhuaweicloud.com` 前面那段是 **32 位十六进制**，手工抄写极易重复或漏字符（本笔记早期版本就写成了 48 位）。地址非法时的报错是 `Get "https://registry-1.docker.io/v2/": context deadline exceeded`——**错误信息指向的是官方源，很容易误判成"加速器失效"，实际是地址写错了**。判断方法：看 `docker info` 里 Registry Mirrors 是否有你配的那一条。
 
+### 加速器正常但单个镜像拉不下来
+
+实测现象（2026-10-29 拉 `nginx:1.27-alpine`）：
+
+```
+7b229517ed22: Pull complete
+b9b388a21ecf: Download complete        ← 所有层都下完了
+Get "https://registry-1.docker.io/v2/": context deadline exceeded
+```
+
+**层已经 100% 下载，却卡在最后一步失败**，重试时内部会连续打印三轮 `Pulling from library/xxx`。
+
+原因与判断：
+
+- `docker info` 里三个加速器都在、其他镜像都拉得动 → 说明**不是配置问题**，而是这个 tag 在加速器侧没有完整缓存，Docker 回退直连官方源，网络抖动导致最后一跳超时；
+- 关键点：**已下载的层会留在本地缓存**，重试不会重新传那几个 MB，成本极低，多试一两次往往就过了；
+- 若反复失败且并不急用新版本，还有一个"零下载"思路：直接用机器上已有的镜像 + busybox `httpd` 提供静态页（见笔记 12 §4.6 应急方案），先把业务跑起来，镜像问题单独排。
+
+> 经验：**镜像拉取失败要区分"配置错"和"网络抖"**。前者看 `docker info`，后者看进度条——进度条能到 100% 就说明链路是通的，只是最后一跳不稳。
+
 ### 配置说明
 
 | 配置项 | 作用 |
