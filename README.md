@@ -119,7 +119,7 @@ flowchart TD
 | 根域名 / `monitor` 返回 `Congratulations!` | NPM 内置 `default_host` 兜底站点会响应所有未匹配域名，**状态码 200 具有欺骗性** | 新建 Proxy Host 并签证书；判断标准是「页面标题 + 443 证书」而非状态码（见笔记 12） |
 | Grafana 经域名访问，一登录就跳 localhost | `root_url` 仍是默认 `http://localhost:3000`，所有绝对链接都指向它 | 设 `GF_SERVER_ROOT_URL=https://monitor.cloud321.cloud` |
 | 用 iptables 封 Docker 映射的端口封不住 | 端口映射走 iptables 的 `DOCKER` 链，不经过 `INPUT` | 从云安全组收敛，或用 `DOCKER-USER` 链 |
-| 宿主机 `curl` 通、NPM 反代却 502 | 发布端口有两条路径：宿主机进程走 `docker-proxy`，容器间访问走 `nat/DOCKER` 的 DNAT；该端口 DNAT 未生效，容器侧报 `EHOSTUNREACH`（不是 refused） | 放弃宿主端口，portal 加入 `npm_default`，NPM 用容器名 `portal:80` 转发（见笔记 12 §9.5） |
+| 宿主机 `curl` 通、NPM 反代却 502 | 发布端口有两条路径：宿主机进程走 `docker-proxy`，容器间访问走 `nat/DOCKER` 的 DNAT；该端口 DNAT 未生效，容器侧报 `EHOSTUNREACH`（不是 refused） | 放弃宿主端口，portal 加入 `npm_default`，NPM 用容器名 `portal:80` 转发（排障全过程见笔记 15） |
 
 ---
 
@@ -141,6 +141,8 @@ cloud/
 ├── 10 Alist云盘文件服务.md
 ├── 11 自动备份与恢复.md
 ├── 12 根域名门户与域名收尾配置.md
+├── 13 备份磁盘占满线上排障与备份脚本修复.md
+├── 15 NPM跨容器反代502排障实录.md
 ├── 站点/                         # 根域名门户（静态页 + nginx 配置）
 │   ├── index.html
 │   ├── nginx.conf
@@ -206,9 +208,9 @@ services:
 | 云盘文件 | `https://files.cloud321.cloud` | Alist，WebDAV 路径 `/dav` |
 | 密码管理 | `https://vault.cloud321.cloud` | Vaultwarden，已关闭公开注册 |
 
-> - 全站 80 端口强制 301 跳转 443，HTTPS 证书由 Let's Encrypt 自动签发与续期；
-> - 管理端口（NPM `81`、Prometheus `9090`、Node Exporter `9100`）不对公网暴露，仅 VPC 内可见；
-> - `monitor` 与根域名门户按 [[12 根域名门户与域名收尾配置]] 上线后生效；在此之前这两处仍返回 NPM 默认页。
+> - HTTPS 证书由 Let's Encrypt 自动签发与续期；80 → 443 的强制跳转（Force SSL）按站点逐条开启，当前 `status` / `vault` 已完成，其余站点收尾中；
+> - 管理端口（NPM `81`、Prometheus `9090`、Node Exporter `9100`）不对公网暴露，仅 VPC 内可见；门户容器不占用任何宿主机端口，直接挂在 NPM 的 Docker 网络上；
+> - `monitor` 反代与证书待补，方案见 [[12 根域名门户与域名收尾配置]] §5.2。
 
 ---
 
