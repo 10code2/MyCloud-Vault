@@ -209,7 +209,7 @@ while waiting for connection (Client.Timeout exceeded while awaiting headers)
 cat > /etc/docker/daemon.json << 'EOF'
 {
   "registry-mirrors": [
-    "https://38b2244086554648b2278911c98b2278911c98a11fd.mirror.swr.myhuaweicloud.com",
+    "https://38b2244086554648b2278911c98a11fd.mirror.swr.myhuaweicloud.com",
     "https://docker.m.daocloud.io",
     "https://docker.1panel.live"
   ],
@@ -226,6 +226,15 @@ systemctl restart docker
 ```
 
 **效果**：拉取速度从原来的 2M 飙到 **460M**，走内网完全起飞。
+
+**配置后必须验证**——写错一个字符，Docker 不会报错，只会**静默跳过该镜像源直连官方源**：
+
+```bash
+docker info | grep -A3 "Registry Mirrors"   # 必须出现你的 SWR 地址
+docker pull nginx:1.27-alpine               # 实测拉一个小镜像
+```
+
+> ⚠️ 踩过的坑：SWR 地址里 `myhuaweicloud.com` 前面那段是 **32 位十六进制**，手工抄写极易重复或漏字符（本笔记早期版本就写成了 48 位）。地址非法时的报错是 `Get "https://registry-1.docker.io/v2/": context deadline exceeded`——**错误信息指向的是官方源，很容易误判成"加速器失效"，实际是地址写错了**。判断方法：看 `docker info` 里 Registry Mirrors 是否有你配的那一条。
 
 ### 配置说明
 
@@ -326,6 +335,7 @@ docker compose version
 | Docker 最新版装不上 | Docker 官方已停止支持 CentOS 7 | 指定安装 24.0.9 |
 | docker-compose 下载失败 | GitHub 加速地址 ghfast.top 不可用 | 用 Docker 内置的 Compose 插件 |
 | 镜像拉取超时 request canceled | 公开加速地址不可用，回退到官方源 | 换华为云 SWR 内网加速器 |
+| 报错指向 `registry-1.docker.io` 且 `context deadline exceeded` | **加速器地址写错**（如 ID 重复成 48 位）或加速器未生效，Docker 静默回退官方源 | `docker info \| grep -A3 "Registry Mirrors"` 核对；地址与华为云控制台逐字符比对 |
 | 容器挂载目录 permission denied | SELinux 阻止 | `setenforce 0` 或挂载加 `:z` |
 | 容器日志把磁盘写满 | 默认无日志大小限制 | `daemon.json` 配 `max-size`/`max-file` |
 
