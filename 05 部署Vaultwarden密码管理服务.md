@@ -322,6 +322,8 @@ grep SIGNUPS_ALLOWED docker-compose.yml
 
 Vaultwarden 密码服务完成，接下来部署 **Uptime Kuma 服务状态监控**（公开状态页，给面试官看），流程类似：容器启动 → 放行端口 → NPM 反代 + HTTPS。
 
+> **备案收尾（2026-10-29 备案通过后）**：`vault.cloud321.cloud` 的 NPM 反代与证书已在 4.7 配置，收尾阶段核对规则生效、Force SSL / WebSocket 正常；客户端服务器地址切到 `https://vault.cloud321.cloud`。通用清单见 [[07 网站ICP备案]] §7.2。Vaultwarden 为自用后台，不做公开导航入口、保持关闭公开注册。
+
 ---
 
 ## 九、面试话术
