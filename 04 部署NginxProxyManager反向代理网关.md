@@ -232,6 +232,7 @@ docker logs npm --tail 10
 | 管理后台打不开 | 响应超时 | 81 端口未放行 | iptables + 安全组放行 81 |
 | 不知道登录密码 | 登录失败 | NPM 默认账号 | admin@example.com / changeme |
 | 提示 version obsolete | 警告 | Compose v2 不要求 version | 忽略或删 version 行 |
+| 后端端口直绑公网被扫描 | 整机 wa 飙高、IO 拥塞 | 后端 `ports: '端口:端口'` 默认绑 `0.0.0.0`，绕过 NPM 直接暴露；2026-10-30 Grafana 3000 即因此被境外直连打满 | 生产态后端改 `expose`、接入 NPM 共享网络用容器名直连；完整排障见 [[16 Grafana公网暴露触发IO饱和排障实录]]，端口收敛理念见 [[02 NPM反向代理网关扩展]] §3.6 |
 
 ---
 

@@ -248,6 +248,7 @@ node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100   # 可用内�
 | 数据源连不通 | 填了 127.0.0.1 | 用服务名 `prometheus:9090` |
 | 大量 No data | 时间窗口 24h、数据刚采 | 改 15 分钟，等待 |
 | 域名访问不了 | 未备案 | 2026-10-29 备案通过（07），阻断解除；反代切换见 07 第六章 |
+| 整机 wa 飙高、IO 拥塞 | Grafana 3000 以 `0.0.0.0` 直绑公网被境外扫描直连，2G 内存排队超时后内部任务反复冷读插件与索引 | 安全组先收口止血；后续清理无用插件、加 `mem_limit`、端口收口到 NPM 后面；完整复盘见 [[16 Grafana公网暴露触发IO饱和排障实录]]，通用排查方法见 [[03 Linux-IO拥塞排查方法论与proc采样工具集]] |
 
 > 核心经验：
 > 1. Prometheus 是 **Pull 模型**，目标暴露 `/metrics` 即可被采集；
@@ -266,3 +267,4 @@ node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100   # 可用内�
 - 接入方案见 [[12 根域名门户与域名收尾配置]]：改 `GF_SERVER_ROOT_URL` → NPM 建规则 + 签证书 → 开 Force SSL；对外开放采用**匿名只读（Viewer）**，管理仍用 admin 登录。
 - Grafana 属展示型后台，公开暴露的取舍与替代方案（分享快照）见 12 第六节。
 - 可增加 MySQL Exporter、Nginx Exporter 等，覆盖更多服务。
+- **2026-10-30 线上事故补充**：3000 直绑公网被境外扫描触发整机 IO 饱和，事件经过、根因链条与未完成整改（无用插件清理、`mem_limit`、端口收口）见 [[16 Grafana公网暴露触发IO饱和排障实录]]；本篇 §4.3 的 `ports: ['3000:3000']` 是调试期写法，生产态应按该篇第七章收口。

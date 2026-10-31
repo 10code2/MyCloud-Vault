@@ -120,6 +120,7 @@ flowchart TD
 | Grafana 经域名访问，一登录就跳 localhost | `root_url` 仍是默认 `http://localhost:3000`，所有绝对链接都指向它 | 设 `GF_SERVER_ROOT_URL=https://monitor.cloud321.cloud` |
 | 用 iptables 封 Docker 映射的端口封不住 | 端口映射走 iptables 的 `DOCKER` 链，不经过 `INPUT` | 从云安全组收敛，或用 `DOCKER-USER` 链 |
 | 宿主机 `curl` 通、NPM 反代却 502 | 发布端口有两条路径：宿主机进程走 `docker-proxy`，容器间访问走 `nat/DOCKER` 的 DNAT；该端口 DNAT 未生效，容器侧报 `EHOSTUNREACH`（不是 refused） | 放弃宿主端口，portal 加入 `npm_default`，NPM 用容器名 `portal:80` 转发（排障全过程见笔记 15） |
+| Grafana 监控站 IO 饱和、登录即卡死 | **三层根因**：①3000 端口公网暴露被境外扫描，apiserver/cleanup/bleve 反复读盘 ②Grafana 11+ backgroundinstaller 每次启动自动联网重装 18 个插件 ③app platform 为每个内置数据源 fork 独立 Go 子进程（13 个 gpx_），在 2G 内存下触发页缓存颠簸 | 降级 Grafana 11→10.4.10 LTS（单进程架构），gpx_ 13→0、RSS 185M→57M、启动就绪 40s→5s。三层根因逐层剥离的排障全过程见笔记 16/17/18 |
 
 ---
 
@@ -142,14 +143,21 @@ cloud/
 ├── 11 自动备份与恢复.md
 ├── 12 根域名门户与域名收尾配置.md
 ├── 13 备份磁盘占满线上排障与备份脚本修复.md
+├── 14 README包装与GitHub门面.md
 ├── 15 NPM跨容器反代502排障实录.md
+├── 16 Grafana公网暴露触发IO饱和排障实录.md
+├── 17 Grafana插件自动重装与止血收尾排障续录.md
+├── 18 Grafana app platform过载与降级10x排障收尾.md
+├── 19 服务器全业务只读排查与隐患处置方案.md
 ├── 站点/                         # 根域名门户（静态页 + nginx 配置）
 │   ├── index.html
 │   ├── nginx.conf
 │   └── docker-compose.yml
 └── 扩展讨论/
     ├── 01 云环境和docker配置扩展.md
-    └── 02 NPM反向代理网关扩展.md
+    ├── 02 NPM反向代理网关扩展.md
+    ├── 03 Linux-IO拥塞排查方法论与proc采样工具集.md
+    └── 04 排障中的证据验证与判断纪律.md
 ```
 
 服务器端统一组织在 `/opt/cloudlab/`，每个服务一个目录，包含独立的 `docker-compose.yml`。
@@ -204,13 +212,13 @@ services:
 | **平台门户** | `https://cloud321.cloud` | 服务导航、技术栈、备案号悬挂 |
 | 技术博客 | `https://blog.cloud321.cloud` | Halo |
 | 服务可用性监控 | `https://status.cloud321.cloud` | Uptime Kuma 公开状态页 |
-| 主机资源监控 | `https://monitor.cloud321.cloud` | Grafana（匿名只读，数据源 Prometheus） |
+| 主机资源监控 | `https://monitor.cloud321.cloud` | Grafana 10.4.10 LTS（数据源 Prometheus，Node Exporter Full 仪表盘） |
 | 云盘文件 | `https://files.cloud321.cloud` | Alist，WebDAV 路径 `/dav` |
 | 密码管理 | `https://vault.cloud321.cloud` | Vaultwarden，已关闭公开注册 |
 
-> - HTTPS 证书由 Let's Encrypt 自动签发与续期；80 → 443 的强制跳转（Force SSL）按站点逐条开启，当前 `status` / `vault` 已完成，其余站点收尾中；
-> - 管理端口（NPM `81`、Prometheus `9090`、Node Exporter `9100`）不对公网暴露，仅 VPC 内可见；门户容器不占用任何宿主机端口，直接挂在 NPM 的 Docker 网络上；
-> - `monitor` 反代与证书待补，方案见 [[12 根域名门户与域名收尾配置]] §5.2。
+> - HTTPS 证书由 Let's Encrypt 自动签发与续期；**全站 Force SSL 已 6/6 完成**（80 一律 301 跳 443）；
+> - 管理端口（NPM `81` 已在安全组关闭公网访问、Prometheus `9090`、Node Exporter `9100`）不对公网暴露；门户容器不占用任何宿主机端口，直接挂在 NPM 的 Docker 网络上；
+> - Grafana 曾因 11+ app platform 架构在 2G 内存下触发 IO 饱和，已降级到 10.4.10 LTS 彻底解决（见笔记 16/17/18）。
 
 ---
 
@@ -225,4 +233,4 @@ services:
 
 ---
 
-> 持续更新中：域名反代与备案号悬挂收尾、公安备案、监控告警完善、备份异地容灾。
+> 后续计划：公安备案（截止 2026-11-28，暂缓）；端口结构性收口（ports→expose + NPM 共享网络）与容器内存限制属可选加固。
