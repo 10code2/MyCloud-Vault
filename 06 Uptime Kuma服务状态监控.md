@@ -2,7 +2,9 @@
 
 > 定位：CloudLab 的"服务可用性监控 + 对外状态页"，面试官能直接看到服务实时运行状态
 > 服务器：华为云 Flexus · 目录 `/opt/cloudlab/uptime-kuma`
-> 日期：2026-10-19
+> 日期：2026-10-19（最后更新 2026-10-31）
+>
+> **当前状态**：✅ 状态页已扩展为 6 个子域名全覆盖监控（2026-10-31）；监控 URL 从内网 IP 切换为 HTTPS 子域名，百度外部对照保留但不展示。
 
 ---
 
@@ -21,8 +23,13 @@
 flowchart TD
     V[访客/面试官] --> NPM[NPM 反向代理网关]
     NPM -->|status.cloud321.cloud<br/>80/443| Kuma[Uptime Kuma 容器:3001]
-    Kuma -->|每60秒 HTTP探测| Vault[Vaultwarden<br/>vault.cloud321.cloud]
-    Kuma -->|每60秒 HTTP探测| Baidu[百度<br/>www.baidu.com]
+    Kuma -->|每60秒 HTTPS 探测| Portal[平台门户<br/>cloud321.cloud]
+    Kuma -->|每60秒 HTTPS 探测| Blog[技术博客<br/>blog.cloud321.cloud]
+    Kuma -->|每60秒 HTTPS 探测| Monitor[资源监控<br/>monitor.cloud321.cloud]
+    Kuma -->|每60秒 HTTPS 探测| Files[云盘服务<br/>files.cloud321.cloud]
+    Kuma -->|每60秒 HTTPS 探测| Vault[密码管理<br/>vault.cloud321.cloud]
+    Kuma -->|每60秒 HTTPS 探测| Status[状态页自身<br/>status.cloud321.cloud]
+    Kuma -->|外部对照不展示| Baidu[百度<br/>www.baidu.com]
     Kuma --> Data[("./data 持久化<br/>监控配置与历史")]
 ```
 
@@ -43,7 +50,7 @@ flowchart LR
 
 1. Docker 部署 Uptime Kuma 容器，数据持久化
 2. 创建管理员账号
-3. 添加监控项（Vaultwarden + 百度外部对照）
+3. 添加监控项（6 个子域名全覆盖 + 百度外部对照）
 4. 创建对外公开状态页
 5. 在 NPM 配置子域名反代 + HTTPS
 
@@ -141,6 +148,30 @@ Uptime Kuma 支持的监控类型：
 >
 > **不要用公网 IP 监控本机自身**：Kuma 和被监控服务都在同一台机器上时，走公网 IP 会经过 NAT 回环（hairpin NAT），在部分网络环境下连通性异常，造成误报；监控自有服务优先用域名（端到端真实）或内网地址，公网 IP 只用于外部对照。
 
+**③ 扩展为 6 个子域名全覆盖（2026-10-31）**
+
+初始部署只监控了 Vaultwarden + 百度，状态页对外也只展示这两个。后续发现其余 4 个服务虽然也配了监控项，但用的是 `http://172.17.0.1:内网端口`，且没关联到公开状态页——访客打开 `status.cloud321.cloud` 只看到 2 项，以为只监控了 2 个服务。
+
+修复内容：
+- 把 monitor 3~6 的 URL 从 `http://172.17.0.1:端口` 切换为 `https://子域名`（blog / monitor / files / status）
+- 新增 monitor 7：`https://cloud321.cloud`（平台门户）
+- 把百度从状态页移除（保留监控做外部对照，但不展示给访客）
+- 把 6 个子域名全部关联到状态页分组（`monitor_group` 表，group_id=1）
+
+| monitor_id | 名称 | URL | 状态页展示 | send_url |
+|---|---|---|---|---|
+| 1 | Vaultwarden 密码服务 | vault.cloud321.cloud | ✅ | 否（私有，只显示状态） |
+| 3 | 技术博客 | blog.cloud321.cloud | ✅ | 是 |
+| 4 | 主机资源监控 | monitor.cloud321.cloud | ✅ | 是 |
+| 5 | 云盘文件服务 | files.cloud321.cloud | ✅ | 是 |
+| 6 | 服务状态页 | status.cloud321.cloud | ✅ | 是 |
+| 7 | 平台门户 | cloud321.cloud | ✅ | 是 |
+| 2 | 百度（外部对照） | www.baidu.com | ❌ 不展示 | — |
+
+> **send_url 的含义**：控制状态页上是否显示可点击的监控目标 URL。Vaultwarden 设为 0（不显示链接），因为密码管理是私有服务，状态页只展示"是否在线"不提供入口；其余 5 个设为 1（显示链接），访客可直接点击跳转。
+>
+> **操作方式**：直接改 SQLite + `docker restart`。Uptime Kuma 的 monitor/monitor_group 配置存在 `/app/data/kuma.db`，通过 `docker exec -i uptime-kuma sqlite3 /app/data/kuma.db < script.sql` 执行 SQL，重启后前端自动加载新配置。
+
 ### 5. 创建公开状态页
 
 - **仪表盘（Dashboard）**：带增删改的管理后台，不对外；
@@ -148,8 +179,10 @@ Uptime Kuma 支持的监控类型：
 - 操作：右上角"状态页面" → 新建状态页：
   - 标题 `CloudLab 服务状态`
   - Slug `cloudlab`（决定网址 `.../status/cloudlab`）
-  - 勾选展示 Vaultwarden、百度
+  - 勾选展示 6 个子域名监控项（vault / blog / monitor / files / status / portal）
+  - 百度外部对照保留监控但不在状态页展示
 - "编辑状态页/前往仪表盘"按钮**只有登录管理员可见**，访客看到的是只读页。
+- Custom Domain = `status.cloud321.cloud`（让 Kuma 知道该域名对应哪个状态页）
 
 ### 6. NPM 反代 + HTTPS
 
@@ -165,14 +198,14 @@ Uptime Kuma 支持的监控类型：
   - 不依赖 80 端口，证书申请成功（还可申请通配符 `*.cloud321.cloud`）；
   - 概念扫盲（HTTP-01 / DNS-01 / 通配符证书 / `*.` 的含义）见 [[07 网站ICP备案]] 第二章 基础概念（2.1–2.7）。
 
-### 7. 备案通过后的状态（2026-10-29）
+### 7. 备案通过后的状态（2026-10-29 → 2026-10-31）
 
 - 证书成功后，域名 80/443 曾因**未 ICP 备案被合规阻断**（排查全过程见 [[07 网站ICP备案]]）；
 - 2026-10-29 备案通过，阻断解除；`status.cloud321.cloud` 已完成 NPM 反代并持有 Let's Encrypt 证书，可正常 HTTPS 访问，公开状态页标题为「CloudLab 服务状态」；
-- 收尾待办：
-  1. 把各监控目标的 URL 从 `http://公网IP:端口` 切到 `https://<子域名>`；
-  2. 新增根域名门户 `https://cloud321.cloud` 的 HTTP(s) 关键字监控（关键字 `CloudLab`），并勾选证书到期提醒；
-  3. 补 `monitor.cloud321.cloud` 监控项（启用见 [[12 根域名门户与域名收尾配置]]）。
+- 2026-10-31 状态页扩展为 6 个子域名全覆盖（见 §4.4 ③），原 3 条待办全部闭合：
+  1. ✅ 各监控目标的 URL 从 `http://172.17.0.1:端口` 切到 `https://<子域名>`；
+  2. ✅ 新增根域名门户 `https://cloud321.cloud` 的 HTTP(s) 监控，并关联到状态页；
+  3. ✅ 补 `monitor.cloud321.cloud` 监控项并关联到状态页。
 
 ---
 
